@@ -1,33 +1,55 @@
 #include "Date.h"
 
-Date::Date():date(MyString()), day(0), month(0), year(0) {}
+Date::Date(): day(0), month(0), year(0) {}
 
 Date::Date(const MyString &newDate) {
     date = newDate;
-    assert(date.size() != 10 && "invalid date"); // yyyy-mm-dd
+    if (date.size() != 10) {
+        assert(date.size() != 10 && "invalid date"); // yyyy-mm-dd
+    }
     if (date[0] >= '0' && date[0] <= '9' &&
         date[1] >= '0' && date[1] <= '9' &&
         date[2] >= '0' && date[2] <= '9' &&
         date[3] >= '0' && date[3] <= '9'){
         year = (date[0]-'0')*1000+(date[1]-'0')*100+(date[2]-'0')*10+(date[3]-'0');
     }else {
-        assert(date.size() != 10 && "invalid date");
+        assert("invalid date");
     }
     if (date[5] >= '0' && date[5] <= '9' &&
         date[6] >= '0' && date[6] <= '9'){
         month = (date[5]-'0')*10+(date[6]-'0');
+        if(month > 12){
+            month = 0;
+            year = 0;
+            assert("invalid date");
+        }
     }else {
         year = 0;
-        assert(date.size() != 10 && "invalid date");
+        assert("invalid date");
     }
 
     if (date[8] >= '0' && date[8] <= '9' &&
         date[9] >= '0' && date[9] <= '9'){
         day = (date[8]-'0')*10+(date[9]-'0');
+        int maxDate = 28;
+        switch (month) {
+            case 1: case 3: case 5: case 7: case 8: case 10: case 12: maxDate += 3; break;
+            case 4: case 6: case 9: case 11: maxDate += 2; break;
+            default:break;
+        }
+        if ((month == 2 && year % 400 == 0) || (month == 2 && year % 4 == 0 && year % 100 != 0)){
+            maxDate++;
+        }
+        if (day > maxDate){
+            day = 0;
+            year = 0;
+            month = 0;
+            assert("invalid date");
+        }
     }else {
         year = 0;
         month = 0;
-        assert(date.size() != 10 && "invalid date");
+        assert("invalid date");
     }
 
 }
@@ -90,16 +112,22 @@ bool Date::operator>(const Date &rhs) const {
 }
 
 const int Date::GetDay() const {
-    assert(date.empty() && "there is no such date");
+    if (date.empty()) {
+        assert(date.empty() && "there is no such date");
+    }
     return day;
 }
 const int Date::GetMonth() const {
-    assert(date.empty() && "there is no such date");
+    if (date.empty()) {
+        assert(date.empty() && "there is no such date");
+    }
     return month;
 }
 
 const int Date::GetYear() const {
-    assert(date.empty() && "there is no such date");
+    if (date.empty()) {
+        assert(date.empty() && "there is no such date");
+    }
     return year;
 }
 
@@ -118,12 +146,31 @@ bool Date::operator==(const Date &rhs) const {
 }
 
 const MyString Date::GetFullDate() const {
+
     return date;
 }
+
 
 void Date::makeDateEmpty() {
     date.makeStringEmpty();
     day = 0;
     month = 0;
     year = 0;
+}
+
+const bool Date::IsDateEmpty() const{
+    if (date.empty()){
+        return true;
+    }
+    return false;
+}
+
+std::istream &operator>>(std::istream &is, Date &dt) {
+    is >> dt.date;
+    return is;
+}
+
+std::ostream &operator<<(std::ostream &os,const Date &dt) {
+    os << dt.date;
+    return os;
 }

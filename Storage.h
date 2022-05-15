@@ -18,4 +18,5 @@ public:
     const void PrintAll() const;
     void clearing(const Date& currentDate);
     void checkPeriod(const Date& beg, const Date& end);
+    void SaveChanges();
 };

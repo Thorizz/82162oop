@@ -1,14 +1,6 @@
 #include "Storage.h"
 
-Storage::Storage() {
-    for (int i = 0; i < 100; ++i) {
-        for (int j = 0; j < 100; ++j) {
-            for (int k = 0; k < 100; ++k) {
-                store[i][j][j].removeProduct();
-            }
-        }
-    }
-}
+Storage::Storage() {}
 
 Storage::Storage(const std::vector<std::pair<Product, int>>& newQuantityOfEveryProduct, Product (*newStore)[100][100],
                  const std::vector<Product>& newStoreLog) {
@@ -68,6 +60,7 @@ Storage &Storage::operator=(const Storage &other) {
 void Storage::AddProduct(const Product &newProduct) {
     bool IsItIn = false;
     int found = 0;
+
     for (int p = 0; p < quantityOfEveryProduct.size(); ++p) {
         if (quantityOfEveryProduct[p].first.GetName() == newProduct.GetName()){
             quantityOfEveryProduct[p].second++;
@@ -85,7 +78,7 @@ void Storage::AddProduct(const Product &newProduct) {
                                 }
                             }
                         } else {
-                            if (store[i][j][k].GetName().empty()) {
+                            if (store[i][j][k].IsItEmpty()) {
                                 if (found == 1) {
                                     store[i][j][k] = newProduct;
                                     found = 3;
@@ -107,12 +100,14 @@ void Storage::AddProduct(const Product &newProduct) {
             break;
         }
     }
+
     if (!IsItIn || found != 3){
         bool empty = false;
         for (int i = 0; i < 100; ++i) {
             for (int j = 0; j < 100; ++j) {
                 for (int k = 0; k < 100; ++k) {
-                    if (store[i][j][k].GetName().empty()){
+                    if (store[i][j][k].IsItEmpty()){
+
                         store[i][j][k] = newProduct;
                         empty = true;
                         break;
@@ -171,9 +166,8 @@ void Storage::RemoveProduct(const MyString& name, int quantity) {
                         }
                     }
                     quantityOfEveryProduct.erase(quantityOfEveryProduct.begin()+i);
-                } else {
-                    return;
                 }
+                return;
             } else {
                 Product *listOfAllProducts = new Product [quantityOfEveryProduct[i].second];
                 int counter = 0;
@@ -187,6 +181,13 @@ void Storage::RemoveProduct(const MyString& name, int quantity) {
                         }
                     }
                 }
+                for (int l = 0; l < quantityOfEveryProduct.size(); ++l) {
+                    if (quantityOfEveryProduct[i].first.GetName() == name){
+                        if (quantityOfEveryProduct[i].second > 1){
+                            quantityOfEveryProduct[i].second-=quantity;
+                        }
+                    }
+                }
                 std::sort(listOfAllProducts, listOfAllProducts+counter);
                 for (int t = 0; t < 100; ++t) {
                     for (int j = 0; j < 100; ++j) {
@@ -196,7 +197,7 @@ void Storage::RemoveProduct(const MyString& name, int quantity) {
                                     if (listOfAllProducts[l].GetExpireDate() == store[t][j][k].GetExpireDate()){
                                         storeLog.push_back(store[t][j][k]);
                                         store[t][j][k].removeProduct();
-                                        break;
+                                        return;
                                     }
                                 }
                             }
@@ -220,7 +221,7 @@ const void Storage::PrintAll() const {
         quantityOfEveryProduct[i].first.GetProductionName().Print();
         std::cout << " The comment is ";
         quantityOfEveryProduct[i].first.GetComment().Print();
-        std::cout << " And the quantity is: " << quantityOfEveryProduct[i].second;
+        std::cout << " And the quantity is: " << quantityOfEveryProduct[i].second << std::endl;
     }
 }
 
@@ -268,7 +269,16 @@ void Storage::clearing(const Date &currentDate) {
                         << "production name: " << store[i][j][k].GetProductionName().c_str()
                         << "and the comment is: "<< store[i][j][k].GetComment().c_str();
                         newFile.close();
-                        store[i][j][k] = Product();
+                        for (int l = 0; l < quantityOfEveryProduct.size(); ++l) {
+                            if (quantityOfEveryProduct[i].first.GetName() == store[i][j][k].GetName()){
+                                if (quantityOfEveryProduct[i].second > 1){
+                                    quantityOfEveryProduct[i].second--;
+                                } else {
+                                    quantityOfEveryProduct.erase(quantityOfEveryProduct.begin()+i);
+                                }
+                            }
+                        }
+                        store[i][j][k].removeProduct();
                     }
                 }
             }
@@ -283,10 +293,10 @@ void Storage::checkPeriod(const Date &beg, const Date &end) {
                 if ((store[i][j][j].GetEntranceDate() > beg && store[i][j][j].GetEntranceDate() < end) ||
                 store[i][j][j].GetEntranceDate() == beg || store[i][j][j].GetEntranceDate() == beg){  //too lazy to implement >= and <= I am sorry
                     std::cout << "Product with entrance date " << store[i][j][k].GetEntranceDate().GetFullDate().c_str()
-                            << "and file name: " << store[i][j][k].GetName().c_str()
-                            << "and expire date:" << store[i][j][k].GetExpireDate().GetFullDate().c_str()
-                            << "and production name: " << store[i][j][k].GetProductionName().c_str()
-                            << "and comment : "<< store[i][j][k].GetComment().c_str() << " got in the store";
+                            << " file name: " << store[i][j][k].GetName().c_str()
+                            << " expire date:" << store[i][j][k].GetExpireDate().GetFullDate().c_str()
+                            << " production name: " << store[i][j][k].GetProductionName().c_str()
+                            << " comment : "<< store[i][j][k].GetComment().c_str() << " got in the store";
                 }
             }
         }
@@ -294,12 +304,27 @@ void Storage::checkPeriod(const Date &beg, const Date &end) {
     for (int i = 0; i < storeLog.size(); ++i) {
         if ((storeLog[i].GetEntranceDate() > beg && storeLog[i].GetEntranceDate() < end) ||
                 storeLog[i].GetEntranceDate() == beg || storeLog[i].GetEntranceDate() == beg){  //too lazy to implement >= and <= I am sorry
-            std::cout << "Product with entrance date " << storeLog[i].GetEntranceDate().GetFullDate().c_str()
-                      << "and file name: " << storeLog[i].GetName().c_str()
-                      << "and expire date:" << storeLog[i].GetExpireDate().GetFullDate().c_str()
-                      << "and production name: " << storeLog[i].GetProductionName().c_str()
-                      << "and comment : "<< storeLog[i].GetComment().c_str() << " was taken from the store";
+            std::cout << " Product with entrance date " << storeLog[i].GetEntranceDate().GetFullDate().c_str()
+                      << " file name: " << storeLog[i].GetName().c_str()
+                      << " expire date:" << storeLog[i].GetExpireDate().GetFullDate().c_str()
+                      << " production name: " << storeLog[i].GetProductionName().c_str()
+                      << " comment : "<< storeLog[i].GetComment().c_str() << " was taken from the store";
         }
 
+    }
+}
+
+void Storage::SaveChanges() {
+    std::ofstream newFile;
+    newFile.open ("Store.txt");
+    for (int i = 0; i < 100; ++i) {
+        for (int j = 0; j < 100; ++j) {
+            for (int k = 0; k < 100; ++k) {
+                if(!store[i][j][k].IsItEmpty()){
+                    newFile << store[i][j][k].GetName() << " " << store[i][j][k].GetExpireDate() << " " <<
+                            store[i][j][k].GetProductionName() << " " << store[i][j][k].GetComment() << std::endl;
+                }
+            }
+        }
     }
 }

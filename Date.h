@@ -20,5 +20,8 @@ public:
     bool operator>(const Date& rhs) const;
     bool operator==(const Date& rhs) const;
     const MyString GetFullDate () const;
+    const bool IsDateEmpty()const;
     void makeDateEmpty();
+    friend std::istream& operator>> (std::istream& is, Date& dt);
+    friend std::ostream& operator<< (std::ostream& os, const Date& dt);
 };

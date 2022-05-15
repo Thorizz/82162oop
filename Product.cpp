@@ -1,13 +1,11 @@
 #include "Product.h"
 
-Product::Product() : name(MyString()), expireDate(Date()), entranceDate(Date()),
-                     productionName(MyString()), comment(MyString()){}
+Product::Product() {}
 
 Product::Product(const MyString &newName, const Date &newExpireDate, const Date& newEntranceDate,
                  const MyString& newProductionName, const MyString& newComment):
 name(newName), expireDate(newExpireDate), entranceDate(newEntranceDate),
 productionName(newProductionName), comment(newComment) {
-
 }
 
 Product::Product(const Product &other) {
@@ -16,6 +14,7 @@ Product::Product(const Product &other) {
     entranceDate = other.entranceDate;
     productionName = other.productionName;
     comment = other.comment;
+
 
 }
 
@@ -30,23 +29,23 @@ Product &Product::operator=(const Product &other) {
     return *this;
 }
 
-const MyString Product::GetName() const {
+const MyString& Product::GetName() const {
     return name;
 }
 
-const Date Product::GetExpireDate() const {
+const Date& Product::GetExpireDate() const {
     return expireDate;
 }
 
-const Date Product::GetEntranceDate() const {
+const Date& Product::GetEntranceDate() const {
     return entranceDate;
 }
 
-const MyString Product::GetProductionName() const {
-    return name;
+const MyString& Product::GetProductionName() const {
+    return productionName;
 }
 
-const MyString Product::GetComment() const {
+const MyString& Product::GetComment() const {
     return comment;
 }
 
@@ -63,4 +62,21 @@ void Product::removeProduct() {
     entranceDate.makeDateEmpty();
     productionName.makeStringEmpty();
     comment.makeStringEmpty();
+}
+
+void Product::print() {
+    name.Print();
+    std::cout << std::endl;
+    productionName.Print();
+    std::cout << std::endl;
+    comment.Print();
+    std::cout << std::endl;
+
+}
+
+const bool Product::IsItEmpty() const {
+    if (name.empty()){
+        return true;
+    }
+    return false;
 }
